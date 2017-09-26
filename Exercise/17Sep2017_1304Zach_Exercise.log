@@ -1,0 +1,34 @@
+Get-Date
+External IP: 153.110.241.231
+Region
+eu-west-2
+Zach-VPC
+VPC ID : vpc-b7f88ede
+Zach-IGW
+Internet Gateway ID : igw-bcd751d5
+Zach-Main Route Table
+Route Table ID : rtb-9ccf8cf5
+Zach-Public Subnet	1
+Public Subnet 1 ID : subnet-0c492977
+Zach-Public Subnet	2
+Public Subnet 2 ID : subnet-6046fa2d
+Zach-Private Subnet 2
+Private Subnet1 ID : subnet-f34a2a88
+Elastic
+EIP Address: 35.177.42.3
+Zach-NAT
+NAT Gateway ID : nat-06dff061d4b13fc1d
+Zach-Main Route Table
+Public Route Table ID : rtb-9ccf8cf5
+Zach-Private Route Table
+Private Route Table ID : rtb-9fcf8cf6
+Zach-WebServer-AG
+
+Zach-Private 1
+i-02b0bb2fa0b3026e4
+Zach-Public 1
+i-0fad406ea3ff80992
+Zach-Public 2
+i-0487ceea8c98f946d
+Zach-ELB
+
