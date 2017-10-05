@@ -18,8 +18,10 @@ If (!(Import-Module AWSPowerShell)){ Import-Module AWSPowerShell }
 #If (!(Import-Module SSMDevOps)){ Import-Module SSMDevOps }
 
 #Set-AWSCredential -AccessKey ###### -SecretKey ###### -StoreAs ECS_Zach
-Initialize-AWSDefaults
+Initialize-AWSDefaults -ProfileName ECS_Zach
 Get-AWSCredential -ListProfileDetail
+
+#Collect Exteral IP
 $Global:LocalPC_ExteralIP = Invoke-RestMethod http://ipinfo.io/json | Select -exp ip
 }
 
@@ -404,6 +406,21 @@ New-ELBAppCookieStickinessPolicy -LoadBalancerName $Global:LBname -PolicyName �
 Set-ELBLoadBalancerPolicyOfListener -LoadBalancerName $Global:LBname -LoadBalancerPort 80 -PolicyNames ‘SessionName’
 }
 
+Function CloudWatch {
+#Create dimension to measure CPU across the entire auto scaling group
+$Dimension = New-Object 'Amazon.CloudWatch.Model.Dimension'
+$Dimension.Name = 'AutoScalingGroupName'
+$Dimension.Value = $Global:AutoScalingGroupName
+
+#Create a policy to add two instances
+$ScaleOutArn = Write-ASScalingPolicy -PolicyName 'AddTwoInstances' -AutoScalingGroupName $Global:AutoScalingGroupName -ScalingAdjustment 2 -AdjustmentType 'ChangeInCapacity' -Cooldown (30*60)
+Write-CWMetricAlarm -AlarmName 'AS75' -AlarmDescription 'Add capacity when average CPU within the auto scaling group is more than 75%' -MetricName 'CPUUtilization' -Namespace 'AWS/EC2' -Statistic 'Average' -Period (60*5) -Threshold 75 -ComparisonOperator 'GreaterThanThreshold' -EvaluationPeriods 2 -AlarmActions $ScaleOutArn -Unit 'Percent' -Dimensions $Dimension
+
+#Create a policy to remove two instances
+$ScaleInArn = Write-ASScalingPolicy -PolicyName 'RemoveTwoInstances' -AutoScalingGroupName $Global:AutoScalingGroupName -ScalingAdjustment -2 -AdjustmentType 'ChangeInCapacity' -Cooldown (30*60)
+Write-CWMetricAlarm -AlarmName 'AS25' -AlarmDescription 'Remove capacity when average CPU within the auto scaling group is less than 25%' -MetricName 'CPUUtilization' -Namespace 'AWS/EC2' -Statistic 'Average' -Period (60*5) -Threshold 25 -ComparisonOperator 'LessThanThreshold' -EvaluationPeriods 2 -AlarmActions $ScaleInArn -Unit 'Percent' -Dimensions $Dimension
+}
+
 Function LOG {
 LogWrite "Get-Date"
 
@@ -457,6 +474,9 @@ LogWrite ($Global:PublicServer2.Instances).InstanceID
 
 LogWrite $Global:LBname 
 LogWrite $Global:ELB_DNS
+
+LogWrite
+LogWrite
 }
 
 Function Build_Exercise {
@@ -486,6 +506,7 @@ PublicWebServer
 PublicWebServer2
 AutoScalingGroup
 attachLB_ELB
+CloudWatch
 LOG
 AWS_Menu
 }
