@@ -1,6 +1,5 @@
 #Pre-defined Loging
-Function LogWrite
-{
+Function LogWrite{
    Param ([string]$logstring)
 
    Add-content $Global:Logfile -value $logstring
@@ -27,7 +26,7 @@ $Global:LocalPC_ExteralIP = Invoke-RestMethod http://ipinfo.io/json | Select -ex
 }
 
 #Pick AWS Region
-Function AWSRegion{
+Function AWSRegion {
 # Select a AWS Region of choice
 $Global:RegionArray = (Get-EC2Region)
 $Global:Region = $Global:RegionArray | Select-Object RegionName | Out-GridView -PassThru
@@ -35,8 +34,7 @@ Set-DefaultAWSRegion -Region $Global:Region.RegionName
 }
 
 #Add EC2 Tags
-Function Add-EC2Tag 
-{
+Function Add-EC2Tag {
 
 Param (
       [string][Parameter(Mandatory=$True)]$key,
@@ -51,9 +49,8 @@ Param (
     New-EC2Tag -ResourceId $resourceId -Tag $Tag | Out-Null
 }
 
-
 # Create new VPC
-Function createVPC{
+Function createVPC {
 $vpcResult = New-EC2Vpc -Region $Global:Region.RegionName  -CidrBlock "172.10.0.0/16"
 $Global:vpcId = $vpcResult.VpcId
 
@@ -62,13 +59,13 @@ Add-EC2Tag -key Name -value $Global:VPCTag -resourceId $Global:vpcId
 }
 
 # Enable DNS Support & Hostnames in VPC
-Function enableDNS{
+Function enableDNS {
 Edit-EC2VpcAttribute -VpcId $Global:vpcId -EnableDnsSupport $true
 Edit-EC2VpcAttribute -VpcId $Global:vpcId -EnableDnsHostnames $true
 }
 
 # Create new Internet Gateway
-Function createGateway{
+Function createGateway {
 $igwResult = New-EC2InternetGateway
 $Global:igwAId = $igwResult.InternetGatewayId
 Write-Output "Internet Gateway ID : $Global:igwAId"
@@ -80,7 +77,6 @@ Add-EC2InternetGateway -InternetGatewayId $Global:igwAId -VpcId $Global:vpcId
 Add-EC2Tag -key Name -value $Global:igwTag -resourceId $Global:igwBId
 Add-EC2InternetGateway -InternetGatewayId $Global:igwBId -VpcId $Global:vpcId
 }
-
 
 # Create new Route Table
 Function createRouteTable {
@@ -101,7 +97,7 @@ Function createRoute {
  }
  
 # Public Subnets with IP's
-Function createPublicSubnet1A{
+Function createPublicSubnet1A {
 $AZ = $Global:Region.RegionName + "a"
 $pus1aResult = New-EC2Subnet -Region $Global:Region.RegionName -VpcId $Global:vpcId -CidrBlock "172.10.2.0/24" -AvailabilityZone "$AZ"
 $Global:pus1aId = $pus1aResult.SubnetId
@@ -109,7 +105,7 @@ Register-EC2RouteTable -RouteTableId $Global:rtAId -SubnetId $Global:pus1aId
 Add-EC2Tag -key Name -value $Global:pus1Tag -resourceId $Global:pus1aId
 }
 
-Function createPublicSubnet1B{
+Function createPublicSubnet1B {
 $AZ = $Global:Region.RegionName + "b"
 $pus1bResult = New-EC2Subnet -Region $Global:Region.RegionName -VpcId $Global:vpcId -CidrBlock "172.10.3.0/24" -AvailabilityZone "$AZ"
 $Global:pus1bId = $pus1bResult.SubnetId
@@ -117,7 +113,7 @@ Register-EC2RouteTable -RouteTableId $Global:rtBId -SubnetId $Global:pus1bId
 Add-EC2Tag -key Name -value $Global:pus1Tag -resourceId $Global:pus1bId
 }
 
-Function createPublicSubnet2A{
+Function createPublicSubnet2A {
 $AZ = $Global:Region.RegionName + "a"
 $pus2aResult = New-EC2Subnet -Region $Global:Region.RegionName  -VpcId $Global:vpcId -CidrBlock "172.10.6.0/24" -AvailabilityZone "$AZ"
 $Global:pus2aId = $pus2aResult.SubnetId
@@ -125,7 +121,7 @@ Register-EC2RouteTable -RouteTableId $Global:rtAId -SubnetId $Global:pus2aId
 Add-EC2Tag -key Name -value $Global:pus1Tag -resourceId $Global:pus2aId
 }
 
-Function createPublicSubnet2B{
+Function createPublicSubnet2B {
 $AZ = $Global:Region.RegionName + "b"
 $pus2bResult = New-EC2Subnet -Region $Global:Region.RegionName -VpcId $Global:vpcId -CidrBlock "172.10.7.0/24" -AvailabilityZone "$AZ"
 $Global:pus2bId = $pus2bResult.SubnetId
@@ -133,7 +129,7 @@ Register-EC2RouteTable -RouteTableId $Global:rtBId -SubnetId $Global:pus2bId
 Add-EC2Tag -key Name -value $Global:pus1Tag -resourceId $Global:pus2bId
 }
 
-Function createPublicSubnet3A{
+Function createPublicSubnet3A {
 $AZ = $Global:Region.RegionName + "a"
 $pus3aResult = New-EC2Subnet -Region $Global:Region.RegionName -VpcId $Global:vpcId -CidrBlock "172.10.10.0/24" -AvailabilityZone "$AZ"
 $Global:pus3aId = $pus3aResult.SubnetId
@@ -141,7 +137,7 @@ Register-EC2RouteTable -RouteTableId $Global:rtAId -SubnetId $Global:pus3aId
 Add-EC2Tag -key Name -value $Global:pus1Tag -resourceId $Global:pus3aId
 }
 
-Function createPublicSubnet3b{
+Function createPublicSubnet3b {
 $AZ = $Global:Region.RegionName + "b"
 $pus3bResult = New-EC2Subnet -Region $Global:Region.RegionName -VpcId $Global:vpcId -CidrBlock "172.10.11.0/24" -AvailabilityZone "$AZ"
 $Global:pus3bId = $pus3bResult.SubnetId
@@ -150,7 +146,7 @@ Add-EC2Tag -key Name -value $Global:pus1Tag -resourceId $Global:pus3bId
 }
 
 # Private Subnets with IP's
-Function createPrivateSubnet1A{
+Function createPrivateSubnet1A {
 $AZ = $Global:Region.RegionName + "a"
 $pvs1aResult = New-EC2Subnet -Region $Global:Region.RegionName -VpcId $Global:vpcId -CidrBlock "172.10.51.0/24" -AvailabilityZone "$AZ"
 $Global:pvs1aId = $pvs1aResult.SubnetId
@@ -158,7 +154,7 @@ Register-EC2RouteTable -RouteTableId $Global:rtAId -SubnetId $Global:pvs1aId
 Add-EC2Tag -key Name -value $Global:pus1Tag -resourceId $Global:pvs1aId
 }
 
-Function createPrivateSubnet1B{
+Function createPrivateSubnet1B {
 $AZ = $Global:Region.RegionName + "b"
 $pvs1bResult = New-EC2Subnet -Region $Global:Region.RegionName -VpcId $Global:vpcId -CidrBlock "172.10.52.0/24" -AvailabilityZone "$AZ"
 $Global:pvs1bId = $pvs1bResult.SubnetId
@@ -166,7 +162,7 @@ Register-EC2RouteTable -RouteTableId $Global:rtBId -SubnetId $Global:pvs1bId
 Add-EC2Tag -key Name -value $Global:pus1Tag -resourceId $Global:pvs1bId
 }
 
-Function createPrivateSubnet2A{
+Function createPrivateSubnet2A {
 $AZ = $Global:Region.RegionName + "a"
 $pvs2aResult = New-EC2Subnet -Region $Global:Region.RegionName -VpcId $Global:vpcId -CidrBlock "172.10.55.0/24" -AvailabilityZone "$AZ"
 $Global:pvs2aId = $pvs2aResult.SubnetId
@@ -174,7 +170,7 @@ Register-EC2RouteTable -RouteTableId $Global:rtAId -SubnetId $Global:pvs2aId
 Add-EC2Tag -key Name -value $Global:pus1Tag -resourceId $Global:pvs2aId
 }
 
-Function createPrivateSubnet2B{
+Function createPrivateSubnet2B {
 $AZ = $Global:Region.RegionName + "b"
 $pvs2bResult = New-EC2Subnet -Region $Global:Region.RegionName -VpcId $Global:vpcId -CidrBlock "172.10.56.0/24" -AvailabilityZone "$AZ"
 $Global:pvs2bId = $pvs2bResult.SubnetId
@@ -182,7 +178,7 @@ Register-EC2RouteTable -RouteTableId $Global:rtBId -SubnetId $Global:pvs2bId
 Add-EC2Tag -key Name -value $Global:pus1Tag -resourceId $Global:pvs2bId
 }
 
-Function createPrivateSubnet3A{
+Function createPrivateSubnet3A {
 $AZ = $Global:Region.RegionName + "a"
 $pvs3aResult = New-EC2Subnet -Region $Global:Region.RegionName -VpcId $Global:vpcId -CidrBlock "172.10.60.0/24" -AvailabilityZone "$AZ"
 $Global:pvs3aId = $pvs3aResult.SubnetId
@@ -211,7 +207,6 @@ $Global:HTTPListener2.Protocol = "http"
 $Global:HTTPListener2.InstancePort = 8080
 $Global:HTTPListener2.LoadBalancerPort = 8080
 }
-
 
 #Create HTTPS Listeners
 Function createHTTPSlistener {
@@ -254,6 +249,7 @@ Grant-EC2SecurityGroupIngress -GroupId $Global:securityGroupId -IpPermission @( 
 Add-EC2Tag -key Name -value $Global:securityGroupIdTag -resourceId $Global:securityGroupId
 
 }
+
 # Create EC2 Instance
 Function createRancherManagerServer {
 $userdata = @"
@@ -304,6 +300,7 @@ New-ELBAppCookieStickinessPolicy -LoadBalancerName $Global:Rancher_Key_Lab -Poli
 Set-ELBLoadBalancerPolicyOfListener -LoadBalancerName $Global:Rancher_Key_Lab -LoadBalancerPort 80 -PolicyNames "SessionName"
 }
 
+#
 Function AutoScalingGroup {
 $Global:LaunchConfigurationName = $Global:AutoScalingTag
 New-ASLaunchConfiguration -LaunchConfigurationName $Global:LaunchConfigurationName -InstanceType "t2.micro" -ImageId "ami-489f8e2c" -SecurityGroup "$Global:securityGroup2Id"
@@ -313,6 +310,7 @@ New-ASAutoScalingGroup -AutoScalingGroupName $AutoScalingGroupName -LaunchConfig
 $AutoScalingResult = Get-ASAutoScalingGroup -AutoScalingGroupName $AutoScalingGroupName
 }
 
+# CloudWatch to spin up 2 instances incase of demand
 Function CloudWatch {
 #Create dimension to measure CPU across the entire auto scaling group
 $Dimension = New-Object 'Amazon.CloudWatch.Model.Dimension'
@@ -328,11 +326,7 @@ $ScaleInArn = Write-ASScalingPolicy -PolicyName 'RemoveTwoInstances' -AutoScalin
 Write-CWMetricAlarm -AlarmName 'AS25' -AlarmDescription 'Remove capacity when average CPU within the auto scaling group is less than 25%' -MetricName 'CPUUtilization' -Namespace 'AWS/EC2' -Statistic 'Average' -Period (60*5) -Threshold 25 -ComparisonOperator 'LessThanThreshold' -EvaluationPeriods 2 -AlarmActions $ScaleInArn -Unit 'Percent' -Dimensions $Dimension
 }
 
-Function CleanUp {
-Remove-EC2Vpc $Global:vpcId -Confirm
-Remove-EC2KeyPair $Global:Rancher_Key_Lab -Confirm
-Remove-EC2SecurityGroup -GroupName $Global:createSG -Confirm
-}
+# Variables for the Exercise
 Function Variables {
 
 $Global:ImageID = ((Get-EC2Image -Region $Global:Region.RegionName -Filter @{"Name"="name";"Value"="*ubuntu*"} | sort -Property CreationDate -Descending)[0]).imageid
@@ -362,6 +356,7 @@ $Global:PublicServerTag2 = $Tag + "-Public 2"
 $Global:AutoScalingTag = $Tag + "-WebServer-AG"
 }
 
+# Build Rancher Exercise
 Function Build_Exercise {
 Login_to_AWS
 createVPC
@@ -392,6 +387,7 @@ attachLB_ELB
 
 }
 
+# Clean up if this is for a LAB or demo
 Function Delete_Exercise {
 Remove-EC2Instance -InstanceID ($Global:PrivateDBServer.Instances).InstanceID -Force
 Remove-EC2Instance -InstanceID ($Global:PublicServer.Instances).InstanceID -Force
@@ -418,6 +414,7 @@ Remove-ASLaunchConfiguration $Global:LaunchConfigurationName  -Force
 AWS_Menu
 }
 
+# Basic TUI 
 Function AWS_Menu {
 # Menu TUI
 Write-Host "`n AWS Menu:" -Fore Cyan
